@@ -3,6 +3,9 @@ import * as dotenv from 'dotenv'
 
 dotenv.config()
 export class Config extends ConfigService {
+    constructor(private readonly configService: ConfigService) {
+        super()
+    }
     static getConnectionOptions() {
         return {
             user:  process.env.POSTGRES_USER,
