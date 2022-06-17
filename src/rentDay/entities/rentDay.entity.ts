@@ -1,6 +1,10 @@
 export class RentDayEntity {
-    autoId: string;
-    autoNumber: string;
-    rentDate: string;
-    rentDaysInOneMonth: number;
-}
+    constructor({ autoId, fromDate, toDate }) {
+      this.autoId = autoId;
+      this.fromDate = fromDate;
+      this.toDate = toDate;
+    }
+    autoId: number;
+    fromDate: string;
+    toDate: string;
+  }

@@ -53,7 +53,7 @@ async function boot() {
 
     if(command === 'migration:run') {
         const appService = app.get(AppService);
-        const migration = appService.createMigration(data)
+        const migration = appService.createMigration()
         return console.log('result');
         
     }

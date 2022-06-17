@@ -9,8 +9,8 @@ export class AppService {
     @Inject(forwardRef(() => RentDayService)) private readonly  rentDayService:RentDayService
 
     ) { }
-  async createMigration(data) {
-    await this.autoRentService.createAutoTable(data)
+  async createMigration() {
+    await this.autoRentService.createAutoTable()
     await this.rentDayService.createRentTable()
   }
 }

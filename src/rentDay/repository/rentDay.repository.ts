@@ -1,3 +1,6 @@
+import { ReportDto } from './../dto/reportDto.dto';
+import { RentMonthByAutoIdResponse } from '../dto/rentMonthByAutoIdResponse.dto';
+import { DateInYYYYMMFormatDto } from './../dto/dateInYYYYMMFormatDto.dto';
 import { PG_CONNECTION } from '../../constants/constants';
 import { Inject, Injectable } from '@nestjs/common';
 import { RentDayEntity } from '../entities/rentDay.entity';
@@ -5,26 +8,60 @@ import { RentDayEntity } from '../entities/rentDay.entity';
 @Injectable()
 export class RentDayRepository {
   constructor(@Inject(PG_CONNECTION) private readonly conn: any) {}
-  async create() {
+  async createRentTable() {
     const query = `
     CREATE TABLE RentDays (
+      id SERIAL PRIMARY KEY,
       auto_id int,
-      auto_number varchar(255),
-      rent_date TIMESTAMP,
-      rent_days_in_one_month int,
-      FOREIGN KEY (auto_id, auto_number) REFERENCES Auto (auto_id, auto_number)
+      from_date TIMESTAMP,
+      to_date TIMESTAMP,
+      FOREIGN KEY (auto_id) REFERENCES Auto (auto_id)
   );`;
     const res = await this.conn.query(query);
+    return res.rows[0]
   }
 
-  async insert(data: RentDayEntity) {
+  async findRentMonthByAutoId(autoId: number, date: DateInYYYYMMFormatDto): Promise<RentMonthByAutoIdResponse[]> {
     const query = `
-        INSERT INTO RentDays (auto_id ,auto_number, rent_date, rent_days_in_one_month) 
-                 VALUES( ${data.autoId},'${data.autoNumber}', TO_TIMESTAMP('${data.rentDate}', 'YYYY MM '), '${data.rentDaysInOneMonth}')
-        `;
-        const res = await this.conn.query(query)
-        return res.rows[0]
+    SELECT from_date::varchar, to_date::varchar FROM rentdays WHERE auto_id='${autoId}'
+    `
+    const res = await this.conn.query(query)
+    return res.rows
   }
+  
+  async findRentByMonth(month: number, year: number): Promise<ReportDto[]> {
+    const query = `
+    SELECT * FROM rentDays INNER JOIN auto ON auto.auto_id = rentdays.auto_id WHERE EXTRACT(MONTH FROM rentdays.from_date) = ${month} 
+    AND EXTRACT(YEAR FROM rentdays.from_date) = ${year}
+    `
+    const res = await this.conn.query(query)
+    return res.rows
+  }
+
+  async insert(entity: RentDayEntity) {
+    const query = `
+      INSERT INTO RentDays(auto_id, from_date, to_date) 
+      VALUES ('${entity.autoId}', TO_TIMESTAMP('${entity.fromDate}', 'YYYY MM DD'), 
+      TO_TIMESTAMP('${entity.toDate}', 'YYYY MM DD')
+      )
+    `
+    const res = await this.conn.query(query)
+    return res.rows[0]
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
 
   async update(day, autoNumber, date) {
     const query = `
